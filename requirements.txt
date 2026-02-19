@@ -1,0 +1,11 @@
+faiss-cpu
+neo4j
+ollama
+openai
+sentence-transformers
+tiktoken
+rank-bm25
+rapidfuzz
+streamlit
+hazm
+python-dotenv

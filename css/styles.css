@@ -1,0 +1,226 @@
+/* Google Fonts and Material Icons */
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Base palette */
+    --bg-primary: #1e1f23;
+    --bg-secondary: #24252b;
+    --bg-tertiary: #313338;
+    --border-color: #4b4d50;
+
+    /* Text */
+    --text-primary: #f2f2f2;
+    --text-secondary: #9b9d9d;
+    --text-light: var(--text-primary);
+
+    /* Accents */
+    --accent-color: #313338;
+    --hover-bg: #2d2e33;
+    --active-bg: #3a3b42;
+
+    /* Aliases used across the file */
+    --background-color: var(--bg-primary);
+    --card-background: var(--bg-secondary);
+    --primary-color: #6b6d6f;          /* matches Streamlit theme primaryColor */
+    --secondary-color: var(--text-secondary);
+    --hover-color: #808284;
+
+    /* Links / references */
+    --link-color: #9ac95d;
+    --ref-bg: rgba(255, 255, 255, 0.03);
+    --ref-bg-hover: rgba(255, 255, 255, 0.06);
+    --ref-border: rgba(255, 255, 255, 0.10);
+    --ref-code-bg: rgba(255, 255, 255, 0.08);
+}
+
+/* Global */
+* { font-family: 'Inter', sans-serif; }
+
+.stApp {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+}
+
+/* ==================== SIDEBAR ==================== */
+section[data-testid="stSidebar"] {
+    background: var(--bg-secondary) !important;
+    border-right: 1px solid var(--border-color);
+}
+section[data-testid="stSidebar"] * { color: var(--text-primary) !important; }
+section[data-testid="stSidebar"] h1 {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1rem;
+    margin: 0;
+    border-bottom: none;
+}
+section[data-testid="stSidebar"] .stButton > button {
+    background: transparent;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    padding: 0.6rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+}
+section[data-testid="stSidebar"] .stButton > button:hover {
+    background: var(--hover-bg);
+    transform: none;
+    box-shadow: none;
+}
+section[data-testid="stSidebar"] div[data-testid="column"] button {
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 6px;
+    padding: 0.75rem;
+    width: 100%;
+    text-align: left;
+    font-weight: 400;
+    transition: background 0.2s;
+}
+section[data-testid="stSidebar"] div[data-testid="column"] button:hover {
+    background-color: var(--hover-bg) !important;
+    transform: none;
+}
+section[data-testid="stSidebar"] div[data-testid="column"]:has(button[kind="primary"]) button,
+section[data-testid="stSidebar"] .active-chat button {
+    background-color: var(--active-bg) !important;
+    border-left: 3px solid var(--border-color) !important;
+    font-weight: 500;
+}
+section[data-testid="stSidebar"] button[kind="primary"] {
+    background-color: var(--active-bg) !important;
+    font-weight: 600 !important;
+}
+
+/* ==================== MAIN TITLE ==================== */
+.main h1 {
+    color: var(--secondary-color);
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* ==================== CHAT LAYOUT ==================== */
+
+/* 1) Fix avatar/icon vertical alignment (top align with bubble) */
+div[data-testid="stChatMessage"] {
+    align-items: flex-start !important;  /* default is usually center */
+    margin: 0.75rem 0 !important;        /* move spacing here, not on content */
+}
+
+/* Try to target the avatar container if present */
+div[data-testid="stChatMessage"] [data-testid="stChatMessageAvatar"],
+div[data-testid="stChatMessage"] .stChatMessageAvatar {
+    margin-top: 0 !important;
+}
+
+/* 2) Chat bubble */
+div[data-testid="stChatMessageContent"] {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 0 !important;               /* IMPORTANT: keep bubble aligned with avatar */
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+    border-left: none !important;       /* remove the vertical highlight bar */
+}
+
+/* User bubble background (keep your gradient) */
+div[data-testid="stChatMessage"][aria-label="user"] div[data-testid="stChatMessageContent"],
+div[data-testid="stChatMessage"].user div[data-testid="stChatMessageContent"],
+div[data-testid="stChatMessage"][data-testid*="user"] div[data-testid="stChatMessageContent"] {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #234440 100%) !important;
+}
+
+/* Assistant bubble (same card bg) */
+div[data-testid="stChatMessage"][aria-label="assistant"] div[data-testid="stChatMessageContent"],
+div[data-testid="stChatMessage"].assistant div[data-testid="stChatMessageContent"] {
+    background-color: var(--card-background) !important;
+}
+
+/* (Remove any custom avatar hacks from older versions) */
+div[data-testid="stChatMessage"]::before { content: none !important; }
+
+/* ==================== REFERENCES (EXPANDER) ==================== */
+
+/* Lighter container */
+div[data-testid="stExpander"], .stExpander {
+    background: var(--ref-bg) !important;
+    border: 1px solid var(--ref-border) !important;
+    border-radius: 8px;
+    margin-top: 0.75rem;
+}
+div[data-testid="stExpander"]:hover, .stExpander:hover {
+    background: var(--ref-bg-hover) !important;
+}
+
+/* Make BOTH the title and the inside content smaller */
+div[data-testid="stExpander"] summary,
+.stExpander summary {
+    color: var(--text-primary) !important;
+    font-weight: 600;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+    padding: 0.55rem 0.75rem !important;
+}
+
+/* Streamlit sometimes wraps expander content in these */
+div[data-testid="stExpander"] details,
+div[data-testid="stExpander"] .streamlit-expanderContent,
+div[data-testid="stExpander"] [data-testid="stExpanderDetails"],
+.stExpander details,
+.stExpander .streamlit-expanderContent {
+    font-size: 0.70rem !important;
+    line-height: 1.55 !important;
+    color: var(--text-primary) !important;
+}
+
+/* Force markdown inside expander to be small (this was the missing part) */
+div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"],
+div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] * {
+    font-size: 0.70rem !important;
+    line-height: 1.55 !important;
+    color: var(--text-primary) !important;
+}
+
+/* Code/link/bold inside references should NOT use dark accent */
+div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] strong,
+div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] b {
+    color: var(--text-primary) !important;
+}
+div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] a {
+    color: var(--link-color) !important;
+}
+div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] code,
+div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] pre code {
+    font-size: 0.66rem !important;
+    color: var(--text-primary) !important;
+    background: var(--ref-code-bg) !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+/* Tighten separators inside References */
+div[data-testid="stExpander"] hr,
+.stExpander hr {
+    margin: 0.30rem 0 !important;
+    border-color: var(--ref-border) !important;
+}
+
+/* Global markdown emphasis/link/code should be light too */
+div[data-testid="stMarkdownContainer"] strong,
+div[data-testid="stMarkdownContainer"] b { color: var(--text-primary) !important; }
+div[data-testid="stMarkdownContainer"] a { color: var(--link-color) !important; }
+div[data-testid="stMarkdownContainer"] code {
+    background-color: var(--ref-code-bg) !important;
+    color: var(--text-primary) !important;
+}
