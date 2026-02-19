@@ -82,7 +82,6 @@ HooshDaroo/
 ├── rag.py                  # Hybrid BM25 + FAISS retrieval pipeline
 ├── graphrag.py             # Full Graph RAG pipeline (entity linking, Cypher queries)
 ├── entity_extractor.py     # LLM-based NER & intent classification
-├── make_vector_db.py       # Script to build the Milvus vector database
 ├── chat.py                 # Multi-session chat management & summarization
 ├── prompts.py              # System and summarization prompts
 ├── evaluation.py           # LLM-as-a-Judge evaluation pipeline
@@ -109,7 +108,7 @@ HooshDaroo/
 | Component | Technology |
 |---|---|
 | **Frontend** | Streamlit |
-| **Vector Database** | FAISS (runtime) / Milvus (indexing) |
+| **Vector Database** | FAISS (runtime) |
 | **Knowledge Graph** | Neo4j |
 | **Embedding Model** | `QWEN3-Embedding-0.6B` (via SentenceTransformers) |
 | **Local LLM (Generation)** | `gemma3:4b` via Ollama |
@@ -176,20 +175,10 @@ Then edit `.env`:
 | `AVALAI_LLM_MODEL` | Model for entity extraction | `gpt-4o-mini` |
 | `AVALAI_REASONING_EFFORT` | Reasoning intensity | `minimal` |
 
-### 5. Build the Vector Database (First Time)
-
-If you are setting up from scratch, run the vector DB builder to embed and index your pharmaceutical chunks:
+### 5. Run the Application
 
 ```bash
-python make_vector_db.py
-```
-
-> **Note:** This requires a populated `data/rag_chunks_v5.json` file and a running Milvus instance.
-
-### 6. Run the Application
-
-```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 The app will open automatically in your browser at `http://localhost:8501`.
@@ -266,7 +255,70 @@ Runs a batch evaluation over a predefined test set (`test/questions.json`), coll
 - The RAG context used
 - The GraphRAG context used
 
-Results are saved to `test/results_1.json` and can be fed to an LLM-as-a-Judge scorer.
+Results are saved to `test/results_1.json` were fed to an LLM-as-a-Judge scorer.
+
+---
+
+## 📊 Results & Evaluation
+
+HooshDaroo was evaluated using an **LLM-as-a-Judge** framework, comparing three retrieval configurations to measure the impact of each retrieval strategy on answer quality.
+
+### Evaluation Setup
+
+Each sample in the test set was stored as a JSON record with four fields: the user question (`question`), context retrieved by plain RAG (`rag_context`), context retrieved by GraphRAG (`graph_rag_context`), and the final generated answer (`answer`). Three retrieval configurations were evaluated side-by-side:
+
+| Configuration | Description |
+|---|---|
+| `rag_only` | Only the FAISS hybrid vector retrieval context |
+| `graph_rag_only` | Only the Neo4j knowledge graph context |
+| `both_combined` | Both RAG and GraphRAG contexts fused (production mode) |
+
+A fixed evaluation prompt was sent to **GPT-5.1** (via OpenAI API) as the judge model. For each sample, the judge independently scored two criteria on a 1–5 scale:
+
+- **Groundedness** — does the answer faithfully rely on the retrieved context, or does it generate unsupported claims?
+- **Correctness** — is the answer factually accurate and responsive to the user's question?
+
+### Scores
+
+| Configuration | Groundedness (/ 5) | Correctness (/ 5) |
+|---|---|---|
+| RAG only | 3.88 | 4.24 |
+| GraphRAG only | 3.94 | 4.27 |
+| **Both combined** | **4.18** | **4.27** |
+
+The combined approach yielded the highest Groundedness score (+0.30 over RAG-only), confirming that the knowledge graph meaningfully reduces unsupported generation. Correctness remained consistently high across all three conditions, reflecting the quality of the system prompt and the constraint that the model must only answer from given context.
+
+### Acceptance Rate
+
+Using a pass threshold of **Groundedness ≥ 4 AND Correctness ≥ 4**, the acceptance rates were:
+
+| Configuration | Acceptance Rate |
+|---|---|
+| RAG only | 66.7% |
+| GraphRAG only | 66.7% |
+| **Both combined** | **75.8%** |
+
+The dual-retrieval production mode lifted the acceptance rate by **9.1 percentage points** over either standalone method, validating the complementary nature of vector and graph retrieval.
+
+### Error Analysis
+
+Failures in the `both_combined` condition were categorized into four error types:
+
+- **`INCORRECT_FACT`** — the answer contained a factual error not supported by context
+- **`OMISSION`** — relevant information present in the context was not included in the answer
+- **`OVERCONFIDENT`** — the answer stated uncertain information with unwarranted confidence
+- **`NON_ANSWER`** — the model declined to answer or gave a deflection when context was sufficient
+
+A safety check for **`DANGEROUS`** responses (medically harmful outputs) was also part of the evaluation prompt. No dangerous responses were flagged in the combined configuration.
+
+### Limitations
+
+The evaluation has several acknowledged limitations:
+
+- **Generator model constraints:** `gemma3:4b` is a low-parameter, general-purpose model. In some scenarios it may produce hallucinations or spelling/grammatical errors in Persian output. Fine-tuning with LoRA on pharmaceutical Persian data is a planned improvement.
+- **Judge model bias:** GPT-5.1 was used as the sole judge. A more robust evaluation would use multiple independent judges or human annotators.
+- **End-to-end coverage:** The current evaluation assesses the final answer quality but does not independently benchmark retrieval recall, entity linking accuracy, or GraphRAG Cypher query coverage.
+- **Dataset scope:** The test set reflects the coverage of the current knowledge base, which is limited in breadth. A larger and more diverse pharmaceutical dataset would enable more representative evaluation.
 
 ---
 
@@ -285,7 +337,6 @@ Results are saved to `test/results_1.json` and can be fed to an LLM-as-a-Judge s
 - [ ] **Domain fine-tuning** — fine-tune `Gemma3-4B` on medical Persian QA datasets
 - [ ] **Web search integration** — augment knowledge base with live searches on trusted pharmaceutical sources
 - [ ] **Richer dataset** — expand the knowledge graph and vector store with higher-quality, more comprehensive pharmaceutical data
-- [ ] **Milvus → FAISS migration in production** — consolidate vector storage
 
 ---
 
@@ -293,10 +344,10 @@ Results are saved to `test/results_1.json` and can be fed to an LLM-as-a-Judge s
 
 | Name | Role |
 |---|---|
-| Alireza Babazade | Developer |
-| Mohammad Mehdi Qanbari | Developer |
-| Armita Ghorbani | Developer |
+| Mohammad Mahdi Qanbari | Developer |
 | Sina Mahallati | Developer |
+| Armita Ghorbani | Developer |
+| Alireza Babazade | Developer |
 
 ---
 
